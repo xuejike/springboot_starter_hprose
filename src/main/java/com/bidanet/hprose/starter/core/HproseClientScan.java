@@ -38,9 +38,19 @@ public class HproseClientScan extends ClassPathBeanDefinitionScanner {
         Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
         for (BeanDefinitionHolder holder : beanDefinitions) {
             GenericBeanDefinition definition = (GenericBeanDefinition) holder.getBeanDefinition();
-                definition.getConstructorArgumentValues().addIndexedArgumentValue(0,definition.getBeanClassName());
-                definition.getConstructorArgumentValues().addIndexedArgumentValue(1,hproseClient);
-                definition.setBeanClass(HproseClientFactoryBean.class);
+            //保持原始定义
+//            definition.setOriginatingBeanDefinition(definition.cloneBeanDefinition());
+//
+//            definition.getConstructorArgumentValues().addIndexedArgumentValue(0,definition.getBeanClassName());
+
+//            String beanName = holder.getBeanName();
+//
+//            definition.setBeanClass(HproseClientFactoryBean.class);
+
+
+            definition.setFactoryBeanName("hproseClientFactory");
+            definition.setFactoryMethodName("createClient");
+            definition.getConstructorArgumentValues().addGenericArgumentValue(definition.getBeanClassName());
         }
 
 //        beanDefinitions.clear();

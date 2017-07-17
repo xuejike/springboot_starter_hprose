@@ -1,5 +1,6 @@
 package com.bidanet.hprose.starter.config;
 
+import com.bidanet.hprose.starter.core.HproseClientFactory;
 import com.bidanet.hprose.starter.core.ScanConfig;
 import com.bidanet.hprose.starter.exception.HproseConfigException;
 import hprose.client.HproseClient;
@@ -10,6 +11,8 @@ import hprose.server.HproseService;
 import hprose.server.HproseTcpServer;
 import hprose.server.HproseWebSocketService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -94,9 +97,17 @@ public class HproseServerConfig {
 
     @Bean
     @ConditionalOnBean(HproseClient.class)
-    public ScanConfig createScan(@Autowired HproseClient hproseClient, ApplicationContext applicationContext){
+    public HproseClientFactory hproseClientFactory(@Autowired HproseClient hproseClient){
+        HproseClientFactory hproseClientFactory = new HproseClientFactory(hproseClient);
+        return hproseClientFactory;
+    }
+    @Bean
+    @ConditionalOnBean(HproseClientFactory.class)
+    public ScanConfig createScan(@Autowired HproseClient hproseClient,@Autowired DefaultListableBeanFactory applicationContext){
         ScanConfig scanConfig = new ScanConfig(hproseClient,new String[]{"com.fenxiangbao"});
-
+        scanConfig.setApp(applicationContext);
         return scanConfig;
     }
 }
+
+
