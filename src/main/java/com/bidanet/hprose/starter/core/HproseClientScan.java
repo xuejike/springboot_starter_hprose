@@ -38,8 +38,8 @@ public class HproseClientScan extends ClassPathBeanDefinitionScanner {
         Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
         for (BeanDefinitionHolder holder : beanDefinitions) {
             GenericBeanDefinition definition = (GenericBeanDefinition) holder.getBeanDefinition();
-                definition.getPropertyValues().add("className", definition.getBeanClassName());
-                definition.getPropertyValues().add("hproseClient",hproseClient);
+                definition.getConstructorArgumentValues().addIndexedArgumentValue(0,definition.getBeanClassName());
+                definition.getConstructorArgumentValues().addIndexedArgumentValue(1,hproseClient);
                 definition.setBeanClass(HproseClientFactoryBean.class);
         }
 
@@ -50,10 +50,10 @@ public class HproseClientScan extends ClassPathBeanDefinitionScanner {
     public boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
 //            boolean candidateComponent = super.isCandidateComponent(beanDefinition);
         boolean b = beanDefinition.getMetadata()
-                .hasAnnotation(HproseClient.class.getName());
-        if (b) {
-            System.out.println(b);
-        }
+                .hasAnnotation(HproseClient.class.getName())&&beanDefinition.getMetadata().isInterface();
+//        if (b) {
+////            System.out.println(b);
+//        }
         return b;
     }
 

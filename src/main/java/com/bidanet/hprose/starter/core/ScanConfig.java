@@ -12,7 +12,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 //@Component
 public class ScanConfig implements BeanDefinitionRegistryPostProcessor {
 
-    protected hprose.client.HproseClient hproseClient;
+    protected HproseClient hproseClient;
     protected String[] scanPackages;
 
     public ScanConfig(HproseClient hproseClient, String[] scanPackages) {

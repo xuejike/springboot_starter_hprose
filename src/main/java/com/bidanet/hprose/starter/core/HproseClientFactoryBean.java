@@ -11,6 +11,11 @@ public class HproseClientFactoryBean<T> implements FactoryBean<T> {
     protected HproseClient hproseClient;
     protected String className;
 
+    public HproseClientFactoryBean(String className,HproseClient hproseClient) {
+        this.hproseClient = hproseClient;
+        this.className = className;
+    }
+
     public HproseClient getHproseClient() {
         return hproseClient;
     }
