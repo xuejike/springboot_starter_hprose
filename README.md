@@ -1,3 +1,20 @@
+# Spring Boot Hprose [![](https://jitpack.io/v/xuejike/springboot_starter_hprose.svg)](https://jitpack.io/#xuejike/springboot_starter_hprose)
+## 依赖库
+```xml
+	<repositories>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
+	</repositories>
+    
+    <dependency>
+	    <groupId>com.github.xuejike</groupId>
+	    <artifactId>springboot_starter_hprose</artifactId>
+	    <version>v0.1.1</version>
+	</dependency>
+```
+
 # 配置说明
 ## 服务开启
 ```properties
