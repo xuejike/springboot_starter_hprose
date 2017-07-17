@@ -30,3 +30,10 @@ interface TestService{
 ```
 Spring 会自动加载 并初始化 TestService客户端，可以在Spring 直接使用。
 ## 配置
+
+## 注意
+如果开启热部署功能需要将该类加入 热启动的ClassLoader
+在文件 META-INF/spring-devtools.properties 中加入
+```properties
+restart.include.bdhprose=/springboot_starter_hprose.*\.jar
+```
