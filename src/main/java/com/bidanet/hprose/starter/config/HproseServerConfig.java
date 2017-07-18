@@ -95,14 +95,14 @@ public class HproseServerConfig {
         throw new HproseConfigException("无效客户端配置");
     }
 
+//    @Bean
+//    @ConditionalOnBean(HproseClient.class)
+//    public HproseClientFactory hproseClientFactory(@Autowired HproseClient hproseClient){
+//        HproseClientFactory hproseClientFactory = new HproseClientFactory(hproseClient);
+//        return hproseClientFactory;
+//    }
     @Bean
     @ConditionalOnBean(HproseClient.class)
-    public HproseClientFactory hproseClientFactory(@Autowired HproseClient hproseClient){
-        HproseClientFactory hproseClientFactory = new HproseClientFactory(hproseClient);
-        return hproseClientFactory;
-    }
-    @Bean
-    @ConditionalOnBean(HproseClientFactory.class)
     public ScanConfig createScan(@Autowired HproseClient hproseClient,@Autowired DefaultListableBeanFactory applicationContext,HproseServerConfigProperties properties){
         ScanConfig scanConfig = new ScanConfig(hproseClient,new String[]{properties.clientPackage});
         scanConfig.setApp(applicationContext);
