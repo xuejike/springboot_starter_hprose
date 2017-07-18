@@ -3,6 +3,9 @@ package com.bidanet.hprose.starter.core;
 import com.bidanet.hprose.starter.annotation.HproseClient;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.config.RuntimeBeanNameReference;
+import org.springframework.beans.factory.config.RuntimeBeanReference;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
@@ -19,6 +22,9 @@ public class HproseClientScan extends ClassPathBeanDefinitionScanner {
 
     protected hprose.client.HproseClient hproseClient;
 
+    public HproseClientScan(BeanDefinitionRegistry registry) {
+        super(registry);
+    }
 
     public HproseClientScan(BeanDefinitionRegistry registry, hprose.client.HproseClient hproseClient) {
         super(registry);
@@ -39,18 +45,22 @@ public class HproseClientScan extends ClassPathBeanDefinitionScanner {
         for (BeanDefinitionHolder holder : beanDefinitions) {
             GenericBeanDefinition definition = (GenericBeanDefinition) holder.getBeanDefinition();
             //保持原始定义
-//            definition.setOriginatingBeanDefinition(definition.cloneBeanDefinition());
+            definition.setOriginatingBeanDefinition(definition.cloneBeanDefinition());
 //
-//            definition.getConstructorArgumentValues().addIndexedArgumentValue(0,definition.getBeanClassName());
+            definition.getConstructorArgumentValues().addIndexedArgumentValue(0,definition.getBeanClassName());
+//            definition.getConstructorArgumentValues().addIndexedArgumentValue(1,hproseClient);
+
+
+            definition.setBeanClass(HproseClientFactoryBean.class);
+            definition.getPropertyValues().addPropertyValue("hproseClient",new RuntimeBeanReference("hproseClient"));
 
 //            String beanName = holder.getBeanName();
 //
-//            definition.setBeanClass(HproseClientFactoryBean.class);
 
-
-            definition.setFactoryBeanName("hproseClientFactory");
-            definition.setFactoryMethodName("createClient");
-            definition.getConstructorArgumentValues().addGenericArgumentValue(definition.getBeanClassName());
+            definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
+//            definition.setFactoryBeanName("hproseClientFactory");
+//            definition.setFactoryMethodName("createClient");
+//            definition.getConstructorArgumentValues().addGenericArgumentValue(definition.getBeanClassName());
         }
 
 //        beanDefinitions.clear();

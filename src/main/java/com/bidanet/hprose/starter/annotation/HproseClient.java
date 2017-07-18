@@ -1,5 +1,7 @@
 package com.bidanet.hprose.starter.annotation;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.lang.annotation.ElementType;

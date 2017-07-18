@@ -3,16 +3,22 @@ package com.bidanet.hprose.starter.core;
 import com.bidanet.hprose.starter.exception.HproseConfigException;
 import hprose.client.HproseClient;
 import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Created by xuejike on 2017/7/13.
  */
 public class HproseClientFactoryBean<T> implements FactoryBean<T> {
+//    @Autowired
     protected HproseClient hproseClient;
     protected String className;
 
-    public HproseClientFactoryBean(String className,HproseClient hproseClient) {
-        this.hproseClient = hproseClient;
+//    public HproseClientFactoryBean(String className,HproseClient hproseClient) {
+//        this.hproseClient = hproseClient;
+//        this.className = className;
+//    }
+
+    public HproseClientFactoryBean(String className) {
         this.className = className;
     }
 

@@ -1,11 +1,16 @@
 package com.bidanet.hprose.starter.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by xuejike on 2017/6/28.
  */
+
 @ConfigurationProperties(prefix = "bd.rpc.hprose")
+//@Order(Ordered.LOWEST_PRECEDENCE)
 public class HproseServerConfigProperties {
 
     /**
@@ -33,10 +38,7 @@ public class HproseServerConfigProperties {
      * 客户端最大线程数
      */
     private int clientMaxPool=10;
-    /**
-     * 客户端扫描包路径
-     */
-    protected String clientPackage;
+
 
     public boolean isEnabled() {
         return enabled;
@@ -88,11 +90,4 @@ public class HproseServerConfigProperties {
         this.clientMaxPool = clientMaxPool;
     }
 
-    public String getClientPackage() {
-        return clientPackage;
-    }
-
-    public void setClientPackage(String clientPackage) {
-        this.clientPackage = clientPackage;
-    }
 }
