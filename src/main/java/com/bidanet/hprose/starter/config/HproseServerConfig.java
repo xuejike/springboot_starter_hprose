@@ -103,8 +103,8 @@ public class HproseServerConfig {
     }
     @Bean
     @ConditionalOnBean(HproseClientFactory.class)
-    public ScanConfig createScan(@Autowired HproseClient hproseClient,@Autowired DefaultListableBeanFactory applicationContext){
-        ScanConfig scanConfig = new ScanConfig(hproseClient,new String[]{"com.fenxiangbao"});
+    public ScanConfig createScan(@Autowired HproseClient hproseClient,@Autowired DefaultListableBeanFactory applicationContext,HproseServerConfigProperties properties){
+        ScanConfig scanConfig = new ScanConfig(hproseClient,properties.clientPackage);
         scanConfig.setApp(applicationContext);
         return scanConfig;
     }

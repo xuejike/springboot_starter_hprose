@@ -33,6 +33,10 @@ public class HproseServerConfigProperties {
      * 客户端最大线程数
      */
     private int clientMaxPool=10;
+    /**
+     * 客户端扫描包路径
+     */
+    protected String[] clientPackage;
 
     public boolean isEnabled() {
         return enabled;
@@ -80,6 +84,15 @@ public class HproseServerConfigProperties {
     }
 
     public void setClientMaxPool(int clientMaxPool) {
+
         this.clientMaxPool = clientMaxPool;
+    }
+
+    public String[] getClientPackage() {
+        return clientPackage;
+    }
+
+    public void setClientPackage(String[] clientPackage) {
+        this.clientPackage = clientPackage;
     }
 }
