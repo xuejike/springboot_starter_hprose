@@ -36,7 +36,7 @@ public class HproseServerConfigProperties {
     /**
      * 客户端扫描包路径
      */
-    protected String[] clientPackage;
+    protected String clientPackage;
 
     public boolean isEnabled() {
         return enabled;
@@ -88,11 +88,11 @@ public class HproseServerConfigProperties {
         this.clientMaxPool = clientMaxPool;
     }
 
-    public String[] getClientPackage() {
+    public String getClientPackage() {
         return clientPackage;
     }
 
-    public void setClientPackage(String[] clientPackage) {
+    public void setClientPackage(String clientPackage) {
         this.clientPackage = clientPackage;
     }
 }
