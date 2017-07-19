@@ -195,27 +195,32 @@ public class HproseServerConfig {
         public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
             HproseClientScan scanner = new HproseClientScan(beanDefinitionRegistry);
 
-
-            if (this.resourceLoader != null) {
-                scanner.setResourceLoader(this.resourceLoader);
-            }
-
-            List<String> packages = AutoConfigurationPackages.get(this.beanFactory);
-            if (logger.isDebugEnabled()) {
-                for (String pkg : packages) {
-                    logger.debug("Using auto-configuration base package '{}'", pkg);
+            try {
+                if (this.resourceLoader != null) {
+                    scanner.setResourceLoader(this.resourceLoader);
                 }
-            }
+
+                List<String> packages = AutoConfigurationPackages.get(this.beanFactory);
+                if (logger.isDebugEnabled()) {
+                    for (String pkg : packages) {
+                        logger.debug("Using auto-configuration base package '{}'", pkg);
+                    }
+                }
 
 //                scanner.setAnnotationClass(Mapper.class);
 //                scanner.registerFilters();
-            scanner.doScan(StringUtils.toStringArray(packages));
+                scanner.doScan(StringUtils.toStringArray(packages));
+            }catch (Exception ex){
+                ex.printStackTrace();
+            }
+
         }
 
     }
 
 
     @org.springframework.context.annotation.Configuration
+    @ConditionalOnProperty(prefix = "bd.rpc.hprose",value = "enabled",havingValue = "true")
     @Import({ AutoConfiguredClientScannerRegistrar.class })
 //    @AutoConfigureAfter(HproseServerConfig.class)
 //    @ConditionalOnMissingBean(MapperFactoryBean.class)
