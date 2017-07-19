@@ -72,14 +72,12 @@ public class HproseServerConfig {
     }
 
     @PostConstruct
-    public String init(){
+    public void init(){
 
-        System.out.println("ss");
-        boolean enabled = properties.isEnabled();
-        if (properties.isEnabled()){
+        if (properties!=null){
 
         }
-        return "ss";
+//        return "ss";
     }
     @Bean
     @ConditionalOnMissingBean

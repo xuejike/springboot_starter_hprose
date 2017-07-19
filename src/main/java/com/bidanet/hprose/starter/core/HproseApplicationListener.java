@@ -83,8 +83,9 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
      * @param service
      */
     public void addService(Object service){
-        Class aClass = service.getClass();
+        Class aClass = getHaveAnnotationClass(service.getClass(),HproseService.class);
         if (aClass!=null){
+//            HproseService serviceAnnotation = (HproseService) aClass.getAnnotation(HproseService.class);
             HproseService serviceAnnotation = (HproseService) aClass.getAnnotation(HproseService.class);
             if (serviceAnnotation!=null){
                 String serviceName=serviceAnnotation.value();
