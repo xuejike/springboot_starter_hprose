@@ -142,14 +142,18 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
     public Class getHaveAnnotationClass(Class val,Class<? extends Annotation> annotation){
         Annotation valAnnotation = val.getDeclaredAnnotation(annotation);
         if (valAnnotation==null){
-
-            Class[] interfaces = val.getInterfaces();
-            for (Class aClass : interfaces) {
-                Class anno = getHaveAnnotationClass(aClass, annotation);
-                if (anno !=null){
-                    return anno;
-                }
+            Class superclass = val.getSuperclass();
+            if (superclass!=Object.class){
+               return getHaveAnnotationClass(superclass,annotation);
             }
+//
+//            Class[] interfaces = val.getInterfaces();
+//            for (Class aClass : interfaces) {
+//                Class anno = getHaveAnnotationClass(aClass, annotation);
+//                if (anno !=null){
+//                    return anno;
+//                }
+//            }
             return null;
         }else{
             return val;

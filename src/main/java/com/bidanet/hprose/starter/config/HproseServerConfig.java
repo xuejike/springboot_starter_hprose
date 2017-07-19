@@ -51,6 +51,7 @@ import java.util.List;
 @Configuration
 @ConditionalOnClass(HproseService.class)
 @EnableConfigurationProperties(HproseServerConfigProperties.class)
+
 //@EnableAutoConfiguration
 //@ConditionalOnBean(HproseServerConfigProperties.class)
 //@Order(Ordered.LOWEST_PRECEDENCE)
@@ -220,7 +221,7 @@ public class HproseServerConfig {
 
 
     @org.springframework.context.annotation.Configuration
-    @ConditionalOnProperty(prefix = "bd.rpc.hprose",value = "enabled",havingValue = "true")
+    @ConditionalOnProperty(prefix = "bd.rpc.hprose",value = "clientEnable",havingValue = "true")
     @Import({ AutoConfiguredClientScannerRegistrar.class })
 //    @AutoConfigureAfter(HproseServerConfig.class)
 //    @ConditionalOnMissingBean(MapperFactoryBean.class)
