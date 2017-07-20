@@ -1,12 +1,18 @@
 package com.bidanet.hprose.starter.config;
 
+import com.bidanet.hprose.starter.annotation.HproseEntity;
+import com.bidanet.hprose.starter.controller.HproseController;
 import com.bidanet.hprose.starter.core.HproseClientFactory;
 import com.bidanet.hprose.starter.core.HproseClientScan;
 import com.bidanet.hprose.starter.core.ScanConfig;
+import com.bidanet.hprose.starter.core.SpringBootHprose;
 import com.bidanet.hprose.starter.exception.HproseConfigException;
+import com.bidanet.hprose.starter.tool.LoadPackageClasses;
+import com.google.common.base.Strings;
 import hprose.client.HproseClient;
 import hprose.client.HproseHttpClient;
 import hprose.client.HproseTcpClient;
+import hprose.io.HproseClassManager;
 import hprose.server.HproseHttpService;
 import hprose.server.HproseService;
 import hprose.server.HproseTcpServer;
@@ -43,7 +49,9 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by xuejike on 2017/6/28.
@@ -52,9 +60,6 @@ import java.util.List;
 @ConditionalOnClass(HproseService.class)
 @EnableConfigurationProperties(HproseServerConfigProperties.class)
 
-//@EnableAutoConfiguration
-//@ConditionalOnBean(HproseServerConfigProperties.class)
-//@Order(Ordered.LOWEST_PRECEDENCE)
 public class HproseServerConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(HproseServerConfig.class);
@@ -80,6 +85,16 @@ public class HproseServerConfig {
         }
 //        return "ss";
     }
+    @PreDestroy
+    public void close(){
+        if (hproseService!=null && hproseService instanceof HproseTcpServer){
+            ((HproseTcpServer) hproseService).stop();
+        }
+        if (hproseClient!=null){
+            hproseClient.close();
+        }
+    }
+
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "bd.rpc.hprose",name = "enabled",havingValue = "true")
@@ -112,24 +127,6 @@ public class HproseServerConfig {
         }
         throw new HproseConfigException("无效客户端配置");
     }
-//    @Bean
-//    @ConditionalOnBean(HproseClient.class)
-//    public void loadClient(){
-//        HproseClientScan hproseClientScan = new HproseClientScan(beanFactory, hproseClient);
-//
-//        hproseClientScan.doScan(properties.clientPackage);
-//
-//    }
-//    @Bean
-
-//    public HproseService createHproseService(@Autowired HproseServerConfigProperties properties) throws HproseConfigException, URISyntaxException, IOException {
-//        String url = properties.getUrl();
-//        HproseService hproseService = getHproseService(properties,url);
-//        this.hproseService=hproseService;
-//
-//        return hproseService;
-//
-//    }
     protected HproseService getHproseService(HproseServerConfigProperties properties,String url) throws HproseConfigException, URISyntaxException, IOException {
         if (url==null||"".equals(url)){
             throw new HproseConfigException("URL 为配置");
@@ -148,34 +145,6 @@ public class HproseServerConfig {
         }
         return null;
     }
-//
-//
-//    @PreDestroy
-//    public void close(){
-//        if (hproseService!=null && hproseService instanceof HproseTcpServer){
-//            ((HproseTcpServer) hproseService).stop();
-//        }
-//        if (hproseClient!=null){
-//            hproseClient.close();
-//        }
-//    }
-//
-//
-//    @Bean
-//    @ConditionalOnBean(HproseClient.class)
-//    public HproseClientFactory hproseClientFactory(@Autowired HproseClient hproseClient){
-//        HproseClientFactory hproseClientFactory = new HproseClientFactory(hproseClient);
-//        return hproseClientFactory;
-//    }
-//
-//    @Bean
-//    @ConditionalOnBean(HproseClient.class)
-//    public ScanConfig createScan(){
-//        ScanConfig scanConfig = new ScanConfig(hproseClient,new String[]{properties.getClientPackage()});
-//        scanConfig.setApp(applicationContext);
-//        return scanConfig;
-//    }
-
     public static class AutoConfiguredClientScannerRegistrar implements BeanFactoryAware, ImportBeanDefinitionRegistrar, ResourceLoaderAware{
 
         private BeanFactory beanFactory;
@@ -196,24 +165,27 @@ public class HproseServerConfig {
         public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
             HproseClientScan scanner = new HproseClientScan(beanDefinitionRegistry);
 
-            try {
                 if (this.resourceLoader != null) {
                     scanner.setResourceLoader(this.resourceLoader);
                 }
-
-                List<String> packages = AutoConfigurationPackages.get(this.beanFactory);
+            List<String> packages=new ArrayList<>();
+            try {
+               packages = AutoConfigurationPackages.get(this.beanFactory);
                 if (logger.isDebugEnabled()) {
                     for (String pkg : packages) {
                         logger.debug("Using auto-configuration base package '{}'", pkg);
                     }
                 }
 
+                }catch (Exception ex){
+                    ex.printStackTrace();
+                    packages.add("com");
+                }
+
 //                scanner.setAnnotationClass(Mapper.class);
 //                scanner.registerFilters();
                 scanner.doScan(StringUtils.toStringArray(packages));
-            }catch (Exception ex){
-                ex.printStackTrace();
-            }
+
 
         }
 
@@ -232,6 +204,75 @@ public class HproseServerConfig {
 //            logger.debug("No {} found.", MapperFactoryBean.class.getName());
         }
     }
+    @Configuration
+    @Import({SpringBootHprose.class})
+    public static class EntityScan implements BeanFactoryAware{
+        @Autowired
+        SpringBootHprose springBootHprose;
+        BeanFactory beanFactory;
+        @PostConstruct
+        public void afterPropertiesSet() {
+            List<String> packages=new ArrayList<>();
+            try {
+                packages = AutoConfigurationPackages.get(this.beanFactory);
+                if (logger.isDebugEnabled()) {
+                    for (String pkg : packages) {
+                        logger.debug("Using auto-configuration base package '{}'", pkg);
+                    }
+                }
+
+            }catch (Exception ex){
+                ex.printStackTrace();
+                packages.add("com");
+            }
+            LoadPackageClasses loadPackageClasses = new LoadPackageClasses(StringUtils.toStringArray(packages), HproseEntity.class);
+            try {
+                Set<Class<?>> classSet = loadPackageClasses.getClassSet();
+                for (Class entity : classSet) {
+                    registerEntity(entity);
+                }
+                logger.info("register entity finish");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+//            logger.debug("No {} found.", MapperFactoryBean.class.getName());
+        }
+
+
+        /**
+         * 注册实体
+         * @param cls
+         */
+        public void registerEntity( Class<?> cls){
+//        Class<?> cls = entity.getClass();
+            HproseEntity entityAnno = cls.getAnnotation(HproseEntity.class);
+            String entityName = entityAnno.value();
+            if (Strings.isNullOrEmpty(entityName)){
+                entityName=cls.getSimpleName();
+                int entityIndex = entityName.indexOf("Entity");
+                if (entityIndex>0){
+                    entityName=entityName.substring(0,entityIndex);
+                }
+            }
+
+            HproseClassManager.register(cls,entityName);
+            springBootHprose.addEntity(entityName,cls);
+            if (logger.isDebugEnabled()){
+                logger.debug("register class {} -> {}",entityName,cls.getName());
+            }
+
+        }
+
+        @Override
+        public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
+            this.beanFactory=beanFactory;
+        }
+    }
+
+
 }
 
 

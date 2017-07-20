@@ -14,15 +14,14 @@ import java.io.OutputStreamWriter;
 /**
  * Created by xuejike on 2017/6/29.
  */
-@Controller
-@RequestMapping("/hprose")
+
 public class HproseController {
     @Autowired
     SpringBootHprose springBootHprose;
 
 
 
-    @RequestMapping("/index")
+
     public void doc(String title, ServletResponse response){
         if (Strings.isNullOrEmpty(title)){
             title="hprose接口定义文档";

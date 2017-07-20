@@ -23,8 +23,8 @@ import java.util.Set;
 /**
  * Created by xuejike on 2017/6/26.
  */
-@Component
-@ConditionalOnProperty(prefix = "bd.rpc.hprose",value = "enabled",havingValue = "true")
+
+
 public class HproseApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
 
     protected static Logger logger= LoggerFactory.getLogger(HproseApplicationListener.class);
@@ -48,28 +48,19 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
 
 
-        LoadPackageClasses loadPackageClasses = new LoadPackageClasses(new String[]{"com.fenxiangbao"}, HproseEntity.class);
+        if (properties.isEnabled()){
 
 
-        Map<String, Object> serviceBeans = contextRefreshedEvent.getApplicationContext().getBeansWithAnnotation(HproseService.class);
+            Map<String, Object> serviceBeans = contextRefreshedEvent.getApplicationContext().getBeansWithAnnotation(HproseService.class);
 
-        for (Map.Entry<String, Object> entry : serviceBeans.entrySet()) {
-            addService(entry.getValue());
-        }
-        logger.info("add service finish");
-
-        try {
-            Set<Class<?>> classSet = loadPackageClasses.getClassSet();
-            for (Class entity : classSet) {
-                registerEntity(entity);
+            for (Map.Entry<String, Object> entry : serviceBeans.entrySet()) {
+                addService(entry.getValue());
             }
-            logger.info("register entity finish");
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            logger.info("add service finish");
         }
+
+
+
 //        Map<String, Object> entityBeans = contextRefreshedEvent.getApplicationContext().getBeansWithAnnotation(HproseEntity.class);
 
 
@@ -115,29 +106,6 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
 
     }
 
-    /**
-     * 注册实体
-     * @param cls
-     */
-    public void registerEntity( Class<?> cls){
-//        Class<?> cls = entity.getClass();
-        HproseEntity entityAnno = cls.getAnnotation(HproseEntity.class);
-        String entityName = entityAnno.value();
-        if (Strings.isNullOrEmpty(entityName)){
-            entityName=cls.getSimpleName();
-            int entityIndex = entityName.indexOf("Entity");
-            if (entityIndex>0){
-                entityName=entityName.substring(0,entityIndex);
-            }
-        }
-
-        HproseClassManager.register(cls,entityName);
-        springBootHprose.addEntity(entityName,cls);
-        if (logger.isDebugEnabled()){
-            logger.debug("register class {} -> {}",entityName,cls.getName());
-        }
-
-    }
 
     public Class getHaveAnnotationClass(Class val,Class<? extends Annotation> annotation){
         Annotation valAnnotation = val.getDeclaredAnnotation(annotation);
