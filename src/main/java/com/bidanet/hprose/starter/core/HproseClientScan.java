@@ -1,6 +1,8 @@
 package com.bidanet.hprose.starter.core;
 
 import com.bidanet.hprose.starter.annotation.HproseClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.config.RuntimeBeanNameReference;
@@ -17,7 +19,7 @@ import java.util.Set;
  * Created by xuejike on 2017/7/13.
  */
 public class HproseClientScan extends ClassPathBeanDefinitionScanner {
-
+    public static Logger logger= LoggerFactory.getLogger(HproseClientScan.class);
 
 
     protected hprose.client.HproseClient hproseClient;
@@ -39,41 +41,28 @@ public class HproseClientScan extends ClassPathBeanDefinitionScanner {
     }
 
     public Set<BeanDefinitionHolder> doScan(String... basePackages) {
-//        DefaultListableBeanFactory applicationContext = (DefaultListableBeanFactory) this.applicationContext;
 
         Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
         for (BeanDefinitionHolder holder : beanDefinitions) {
             GenericBeanDefinition definition = (GenericBeanDefinition) holder.getBeanDefinition();
             //保持原始定义
+            logger.debug("加载客户端:"+definition.getBeanClassName());
             definition.setOriginatingBeanDefinition(definition.cloneBeanDefinition());
-//
             definition.getConstructorArgumentValues().addIndexedArgumentValue(0,definition.getBeanClassName());
-//            definition.getConstructorArgumentValues().addIndexedArgumentValue(1,hproseClient);
-
-
             definition.setBeanClass(HproseClientFactoryBean.class);
             definition.getPropertyValues().addPropertyValue("hproseClient",new RuntimeBeanReference("hproseClient"));
-
-//            String beanName = holder.getBeanName();
-//
-
             definition.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
-//            definition.setFactoryBeanName("hproseClientFactory");
-//            definition.setFactoryMethodName("createClient");
-//            definition.getConstructorArgumentValues().addGenericArgumentValue(definition.getBeanClassName());
-        }
 
-//        beanDefinitions.clear();
+
+        }
+        logger.info("成功加载客户端->"+beanDefinitions.size());
         return beanDefinitions;
     }
 
     public boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
-//            boolean candidateComponent = super.isCandidateComponent(beanDefinition);
         boolean b = beanDefinition.getMetadata()
                 .hasAnnotation(HproseClient.class.getName())&&beanDefinition.getMetadata().isInterface();
-//        if (b) {
-////            System.out.println(b);
-//        }
+
         return b;
     }
 

@@ -34,8 +34,6 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
     @Autowired
     hprose.server.HproseService hproseService;
 
-    @Autowired
-    HproseClient hproseClient;
 
     @Autowired
     SpringBootHprose springBootHprose;
@@ -59,14 +57,6 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
             logger.info("add service finish");
         }
 
-
-
-//        Map<String, Object> entityBeans = contextRefreshedEvent.getApplicationContext().getBeansWithAnnotation(HproseEntity.class);
-
-
-
-
-
     }
 
     /**
@@ -76,7 +66,7 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
     public void addService(Object service){
         Class aClass = getHaveAnnotationClass(service.getClass(),HproseService.class);
         if (aClass!=null){
-//            HproseService serviceAnnotation = (HproseService) aClass.getAnnotation(HproseService.class);
+
             HproseService serviceAnnotation = (HproseService) aClass.getAnnotation(HproseService.class);
             if (serviceAnnotation!=null){
                 String serviceName=serviceAnnotation.value();
@@ -96,9 +86,8 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
 
                 hproseService.add(service,serviceClass,serviceName);
                 springBootHprose.addService(serviceName,aClass);
-                if (logger.isDebugEnabled()){
-                    logger.debug("add service {} -> {}",serviceName,service.getClass().getName());
-                }
+
+                logger.info("add service {} -> {}",serviceName,service.getClass().getName());
             }
 
         }
@@ -114,14 +103,7 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
             if (superclass!=Object.class){
                return getHaveAnnotationClass(superclass,annotation);
             }
-//
-//            Class[] interfaces = val.getInterfaces();
-//            for (Class aClass : interfaces) {
-//                Class anno = getHaveAnnotationClass(aClass, annotation);
-//                if (anno !=null){
-//                    return anno;
-//                }
-//            }
+
             return null;
         }else{
             return val;

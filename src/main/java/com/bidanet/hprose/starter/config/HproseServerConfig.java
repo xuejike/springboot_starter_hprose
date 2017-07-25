@@ -2,10 +2,7 @@ package com.bidanet.hprose.starter.config;
 
 import com.bidanet.hprose.starter.annotation.HproseEntity;
 import com.bidanet.hprose.starter.controller.HproseController;
-import com.bidanet.hprose.starter.core.HproseClientFactory;
-import com.bidanet.hprose.starter.core.HproseClientScan;
-import com.bidanet.hprose.starter.core.ScanConfig;
-import com.bidanet.hprose.starter.core.SpringBootHprose;
+import com.bidanet.hprose.starter.core.*;
 import com.bidanet.hprose.starter.exception.HproseConfigException;
 import com.bidanet.hprose.starter.tool.LoadPackageClasses;
 import com.google.common.base.Strings;
@@ -69,83 +66,87 @@ public class HproseServerConfig {
 
     HproseServerConfigProperties properties;
 
-//    @Autowired
-//    DefaultListableBeanFactory beanFactory;
-
 
     public HproseServerConfig(HproseServerConfigProperties properties) {
         this.properties = properties;
     }
 
     @PostConstruct
-    public void init(){
+    public void init() {
 
-        if (properties!=null){
+        if (properties != null) {
 
         }
 //        return "ss";
     }
+
     @PreDestroy
-    public void close(){
-        if (hproseService!=null && hproseService instanceof HproseTcpServer){
+    public void close() {
+        if (hproseService != null && hproseService instanceof HproseTcpServer) {
             ((HproseTcpServer) hproseService).stop();
         }
-        if (hproseClient!=null){
+        if (hproseClient != null) {
             hproseClient.close();
         }
     }
 
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "bd.rpc.hprose",name = "enabled",havingValue = "true")
+    @ConditionalOnProperty(prefix = "bd.rpc.hprose", name = "enabled", havingValue = "true")
+
     public HproseService initService() throws HproseConfigException, IOException, URISyntaxException {
         String url = properties.getUrl();
-        HproseService hproseService = getHproseService(properties,url);
-        this.hproseService=hproseService;
+        HproseService hproseService = getHproseService(properties, url);
+        this.hproseService = hproseService;
 
         return hproseService;
     }
 
+
     @Bean
     @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix = "bd.rpc.hprose",name = "clientEnable",havingValue = "true")
+    @ConditionalOnProperty(prefix = "bd.rpc.hprose", name = "clientEnable", havingValue = "true")
     public HproseClient hproseClient() throws HproseConfigException {
 //        HproseClient hproseClient;
         String clientServerUrl = properties.getClientServerUrl();
-        if (clientServerUrl.contains("tcp")){
+        if (clientServerUrl.contains("tcp")) {
             HproseTcpClient hproseTcpClient = new HproseTcpClient(clientServerUrl);
             hproseTcpClient.setFullDuplex(true);
             hproseTcpClient.setMaxPoolSize(properties.getClientMaxPool());
-            hproseClient=hproseTcpClient;
+            hproseClient = hproseTcpClient;
 //            loadClient();
             return hproseTcpClient;
-        }else if (clientServerUrl.contains("http")){
+        } else if (clientServerUrl.contains("http")) {
             HproseHttpClient hproseHttpClient = new HproseHttpClient(clientServerUrl);
-            hproseClient=hproseHttpClient;
+            hproseClient = hproseHttpClient;
 //            loadClient();
             return hproseHttpClient;
         }
         throw new HproseConfigException("无效客户端配置");
     }
-    protected HproseService getHproseService(HproseServerConfigProperties properties,String url) throws HproseConfigException, URISyntaxException, IOException {
-        if (url==null||"".equals(url)){
+
+    protected HproseService getHproseService(HproseServerConfigProperties properties, String url) throws HproseConfigException, URISyntaxException, IOException {
+        if (url == null || "".equals(url)) {
             throw new HproseConfigException("URL 为配置");
         }
-        if (url.contains("tcp")){
+        if (url.contains("tcp")) {
             HproseTcpServer tcpServer = new HproseTcpServer(url);
             tcpServer.setReactorThreads(properties.getReactorThreads());
             tcpServer.start();
             return tcpServer;
         }
-        if (url.contains("http")){
+        if (url.contains("http")) {
             return new HproseHttpService();
         }
-        if (url.contains("ws")){
+        if (url.contains("ws")) {
             return new HproseWebSocketService();
         }
         return null;
     }
-    public static class AutoConfiguredClientScannerRegistrar implements BeanFactoryAware, ImportBeanDefinitionRegistrar, ResourceLoaderAware{
+
+
+
+    public static class AutoConfiguredClientScannerRegistrar implements BeanFactoryAware, ImportBeanDefinitionRegistrar, ResourceLoaderAware {
 
         private BeanFactory beanFactory;
 
@@ -153,38 +154,36 @@ public class HproseServerConfig {
 
         @Override
         public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-            this.beanFactory=beanFactory;
+            this.beanFactory = beanFactory;
         }
 
         @Override
         public void setResourceLoader(ResourceLoader resourceLoader) {
-            this.resourceLoader=resourceLoader;
+            this.resourceLoader = resourceLoader;
         }
 
         @Override
         public void registerBeanDefinitions(AnnotationMetadata annotationMetadata, BeanDefinitionRegistry beanDefinitionRegistry) {
             HproseClientScan scanner = new HproseClientScan(beanDefinitionRegistry);
 
-                if (this.resourceLoader != null) {
-                    scanner.setResourceLoader(this.resourceLoader);
-                }
-            List<String> packages=new ArrayList<>();
+            if (this.resourceLoader != null) {
+                scanner.setResourceLoader(this.resourceLoader);
+            }
+            List<String> packages = new ArrayList<>();
             try {
-               packages = AutoConfigurationPackages.get(this.beanFactory);
+                packages = AutoConfigurationPackages.get(this.beanFactory);
                 if (logger.isDebugEnabled()) {
                     for (String pkg : packages) {
-                        logger.debug("Using auto-configuration base package '{}'", pkg);
+                        logger.debug("客户端扫描包:{}", pkg);
                     }
                 }
 
-                }catch (Exception ex){
-                    ex.printStackTrace();
-                    packages.add("com");
-                }
-
-//                scanner.setAnnotationClass(Mapper.class);
-//                scanner.registerFilters();
-                scanner.doScan(StringUtils.toStringArray(packages));
+            } catch (Exception ex) {
+                logger.debug("无法获取到AutoConfig基础包", ex);
+                packages.add("com");
+            }
+//            logger.info("客户端扫描包:{}",packag);
+            scanner.doScan(StringUtils.toStringArray(packages));
 
 
         }
@@ -193,26 +192,31 @@ public class HproseServerConfig {
 
 
     @org.springframework.context.annotation.Configuration
-    @ConditionalOnProperty(prefix = "bd.rpc.hprose",value = "clientEnable",havingValue = "true")
-    @Import({ AutoConfiguredClientScannerRegistrar.class })
-//    @AutoConfigureAfter(HproseServerConfig.class)
-//    @ConditionalOnMissingBean(MapperFactoryBean.class)
+    @ConditionalOnProperty(prefix = "bd.rpc.hprose", value = "clientEnable", havingValue = "true")
+    @Import({AutoConfiguredClientScannerRegistrar.class})
     public static class MapperScannerRegistrarNotFoundConfiguration {
 
-        @PostConstruct
-        public void afterPropertiesSet() {
-//            logger.debug("No {} found.", MapperFactoryBean.class.getName());
-        }
     }
+
+    @org.springframework.context.annotation.Configuration
+    @ConditionalOnProperty(prefix = "bd.rpc.hprose", value = "enable", havingValue = "true")
+    @Import({HproseApplicationListener.class})
+    public static class ServiceConfig{
+
+    }
+
+
+
     @Configuration
     @Import({SpringBootHprose.class})
-    public static class EntityScan implements BeanFactoryAware{
+    public static class EntityScan implements BeanFactoryAware {
         @Autowired
         SpringBootHprose springBootHprose;
         BeanFactory beanFactory;
+
         @PostConstruct
         public void afterPropertiesSet() {
-            List<String> packages=new ArrayList<>();
+            List<String> packages = new ArrayList<>();
             try {
                 packages = AutoConfigurationPackages.get(this.beanFactory);
                 if (logger.isDebugEnabled()) {
@@ -221,8 +225,8 @@ public class HproseServerConfig {
                     }
                 }
 
-            }catch (Exception ex){
-                ex.printStackTrace();
+            } catch (Exception ex) {
+                logger.debug("无法获取到AutoConfig基础包", ex);
                 packages.add("com");
             }
             LoadPackageClasses loadPackageClasses = new LoadPackageClasses(StringUtils.toStringArray(packages), HproseEntity.class);
@@ -230,45 +234,42 @@ public class HproseServerConfig {
                 Set<Class<?>> classSet = loadPackageClasses.getClassSet();
                 for (Class entity : classSet) {
                     registerEntity(entity);
-                }
-                logger.info("register entity finish");
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                }
+                logger.info("Hprose 实体注册完成");
+
+            } catch (Exception e) {
+                logger.error("实体注册失败:",e);
             }
-//            logger.debug("No {} found.", MapperFactoryBean.class.getName());
         }
 
 
         /**
          * 注册实体
+         *
          * @param cls
          */
-        public void registerEntity( Class<?> cls){
-//        Class<?> cls = entity.getClass();
+        public void registerEntity(Class<?> cls) {
             HproseEntity entityAnno = cls.getAnnotation(HproseEntity.class);
             String entityName = entityAnno.value();
-            if (Strings.isNullOrEmpty(entityName)){
-                entityName=cls.getSimpleName();
+            if (Strings.isNullOrEmpty(entityName)) {
+                entityName = cls.getSimpleName();
                 int entityIndex = entityName.indexOf("Entity");
-                if (entityIndex>0){
-                    entityName=entityName.substring(0,entityIndex);
+                if (entityIndex > 0) {
+                    entityName = entityName.substring(0, entityIndex);
                 }
             }
 
-            HproseClassManager.register(cls,entityName);
-            springBootHprose.addEntity(entityName,cls);
-            if (logger.isDebugEnabled()){
-                logger.debug("register class {} -> {}",entityName,cls.getName());
-            }
+            HproseClassManager.register(cls, entityName);
+            springBootHprose.addEntity(entityName, cls);
+
+            logger.debug("Hprose 注册实体 {} -> {}", entityName, cls.getName());
 
         }
 
         @Override
         public void setBeanFactory(BeanFactory beanFactory) throws BeansException {
-            this.beanFactory=beanFactory;
+            this.beanFactory = beanFactory;
         }
     }
 
