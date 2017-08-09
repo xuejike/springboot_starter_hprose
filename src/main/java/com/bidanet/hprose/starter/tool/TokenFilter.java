@@ -80,7 +80,7 @@ public class TokenFilter {
 
 
             ByteBufferStream stream = new ByteBufferStream();
-            stream.write(Arrays.copyOfRange(array,end,array.length));
+            stream.write(Arrays.copyOfRange(array,end+1,array.length));
             return stream.buffer;
         }else{
             return data;
