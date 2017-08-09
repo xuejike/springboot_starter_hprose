@@ -54,7 +54,7 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
             for (Map.Entry<String, Object> entry : serviceBeans.entrySet()) {
                 addService(entry.getValue());
             }
-            logger.info("add service finish");
+            logger.info("Hprose 服务注册完成");
         }
 
     }
@@ -87,7 +87,7 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
                 hproseService.add(service,serviceClass,serviceName);
                 springBootHprose.addService(serviceName,aClass);
 
-                logger.info("add service {} -> {}",serviceName,service.getClass().getName());
+                logger.info("注册 service {} -> {}",serviceName,service.getClass().getName());
             }
 
         }

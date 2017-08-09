@@ -46,7 +46,7 @@ public class HproseClientScan extends ClassPathBeanDefinitionScanner {
         for (BeanDefinitionHolder holder : beanDefinitions) {
             GenericBeanDefinition definition = (GenericBeanDefinition) holder.getBeanDefinition();
             //保持原始定义
-            logger.debug("加载客户端:"+definition.getBeanClassName());
+            logger.debug("Hprose 加载客户端:"+definition.getBeanClassName());
             definition.setOriginatingBeanDefinition(definition.cloneBeanDefinition());
             definition.getConstructorArgumentValues().addIndexedArgumentValue(0,definition.getBeanClassName());
             definition.setBeanClass(HproseClientFactoryBean.class);
@@ -55,7 +55,7 @@ public class HproseClientScan extends ClassPathBeanDefinitionScanner {
 
 
         }
-        logger.info("成功加载客户端->"+beanDefinitions.size());
+        logger.info("Hprose 成功加载客户端->"+beanDefinitions.size());
         return beanDefinitions;
     }
 

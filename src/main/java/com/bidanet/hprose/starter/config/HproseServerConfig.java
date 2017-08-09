@@ -56,7 +56,7 @@ import java.util.Set;
 @Configuration
 @ConditionalOnClass(HproseService.class)
 @EnableConfigurationProperties(HproseServerConfigProperties.class)
-
+@Import({HproseApplicationListener.class})
 public class HproseServerConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(HproseServerConfig.class);
@@ -198,12 +198,6 @@ public class HproseServerConfig {
 
     }
 
-    @org.springframework.context.annotation.Configuration
-    @ConditionalOnProperty(prefix = "bd.rpc.hprose", value = "enable", havingValue = "true")
-    @Import({HproseApplicationListener.class})
-    public static class ServiceConfig{
-
-    }
 
 
 
