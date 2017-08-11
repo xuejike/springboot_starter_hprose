@@ -5,6 +5,8 @@ import com.bidanet.hprose.starter.controller.HproseController;
 import com.bidanet.hprose.starter.core.*;
 import com.bidanet.hprose.starter.exception.HproseConfigException;
 import com.bidanet.hprose.starter.tool.LoadPackageClasses;
+import com.bidanet.hprose.starter.tool.LogFilter;
+import com.bidanet.hprose.starter.tool.TokenFilter;
 import com.google.common.base.Strings;
 import hprose.client.HproseClient;
 import hprose.client.HproseHttpClient;
@@ -114,6 +116,7 @@ public class HproseServerConfig {
             hproseTcpClient.setFullDuplex(true);
             hproseTcpClient.setMaxPoolSize(properties.getClientMaxPool());
             hproseClient = hproseTcpClient;
+
 //            loadClient();
             return hproseTcpClient;
         } else if (clientServerUrl.contains("http")) {

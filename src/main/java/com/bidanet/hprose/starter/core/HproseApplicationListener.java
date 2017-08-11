@@ -1,24 +1,19 @@
 package com.bidanet.hprose.starter.core;
 
-import com.bidanet.hprose.starter.annotation.HproseEntity;
 import com.bidanet.hprose.starter.annotation.HproseService;
 import com.bidanet.hprose.starter.config.HproseServerConfigProperties;
-import com.bidanet.hprose.starter.tool.LoadPackageClasses;
+import com.bidanet.hprose.starter.tool.Filter;
 import com.google.common.base.Strings;
 import hprose.client.HproseClient;
-import hprose.io.HproseClassManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
-import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Created by xuejike on 2017/6/26.
@@ -31,13 +26,12 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
 
     @Autowired
     HproseServerConfigProperties properties;
-    @Autowired
-    hprose.server.HproseService hproseService;
 
+    hprose.server.HproseService hproseService;
+    HproseClient hproseClient;
 
     @Autowired
     SpringBootHprose springBootHprose;
-
 
 
 
@@ -48,7 +42,7 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
 
         if (properties.isEnabled()){
 
-
+            hproseService=contextRefreshedEvent.getApplicationContext().getBean(hprose.server.HproseService.class);
             Map<String, Object> serviceBeans = contextRefreshedEvent.getApplicationContext().getBeansWithAnnotation(HproseService.class);
 
             for (Map.Entry<String, Object> entry : serviceBeans.entrySet()) {
@@ -56,6 +50,32 @@ public class HproseApplicationListener implements ApplicationListener<ContextRef
             }
             logger.info("Hprose 服务注册完成");
         }
+        hproseClient=contextRefreshedEvent.getApplicationContext().getBean(HproseClient.class);
+
+        loadFilter(contextRefreshedEvent.getApplicationContext());
+
+    }
+
+    public void loadFilter(ApplicationContext applicationContext){
+        Map<String, Filter> filterMap = applicationContext.getBeansOfType(Filter.class);
+        if (filterMap==null||filterMap.size()==0){
+            return;
+        }
+        List<Filter> filterList=new ArrayList<>(filterMap.values());
+        filterList.sort(Comparator.comparingInt(Filter::getOrder));
+
+        if (properties.isEnabled()){
+            for (Filter filter : filterList) {
+                hproseService.addFilter(filter.getServer());
+            }
+        }
+        if (properties.isClientEnable()){
+            for (Filter filter : filterList) {
+                hproseClient.addFilter(filter.getClient());
+            }
+
+        }
+
 
     }
 

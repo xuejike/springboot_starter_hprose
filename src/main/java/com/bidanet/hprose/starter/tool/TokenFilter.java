@@ -14,11 +14,16 @@ import java.util.Arrays;
 /**
  * Created by xuejike on 2017/7/25.
  */
-public class TokenFilter {
-    protected String token="xuejike";
+public class TokenFilter implements Filter {
+    protected String token=null;
     protected char TAG='#';
     URLCodec urlCodec = new URLCodec();
     protected ThreadLocal<String> clientToken=new ThreadLocal<>();
+
+    @Override
+    public int getOrder() {
+        return -1;
+    }
 
     public String getClientToken(){
         return clientToken.get();
@@ -32,9 +37,11 @@ public class TokenFilter {
         this.token = token;
     }
 
+    @Override
     public HproseFilter getClient(){
         return new Client();
     }
+    @Override
     public HproseFilter getServer(){
         return new Server();
     }
@@ -94,7 +101,7 @@ public class TokenFilter {
 
         @Override
         public ByteBuffer inputFilter(ByteBuffer data, HproseContext context) {
-            System.out.println("client->input");
+//            System.out.println("client->input");
             return data;
         }
 

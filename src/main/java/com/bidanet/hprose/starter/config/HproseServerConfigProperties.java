@@ -1,9 +1,6 @@
 package com.bidanet.hprose.starter.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
-import org.springframework.stereotype.Component;
 
 /**
  * Created by xuejike on 2017/6/28.
@@ -89,5 +86,6 @@ public class HproseServerConfigProperties {
 
         this.clientMaxPool = clientMaxPool;
     }
+
 
 }
