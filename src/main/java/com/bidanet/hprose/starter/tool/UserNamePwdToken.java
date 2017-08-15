@@ -26,7 +26,7 @@ public class UserNamePwdToken {
 
         @Override
         public String checkToken(String token) {
-            String[] split = token.split("\n");
+            String[] split = token.split("\\n");
             String pwd = getPwdByUsername(split[0]);
             String signature = signature(split[0], pwd, split[1]);
             if (signature.equals(token)){
