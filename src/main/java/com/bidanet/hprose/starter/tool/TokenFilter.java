@@ -4,7 +4,6 @@ import hprose.common.HproseContext;
 import hprose.common.HproseFilter;
 import hprose.io.ByteBufferStream;
 import hprose.util.StrUtil;
-import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.URLCodec;
 
 import java.io.UnsupportedEncodingException;
@@ -15,27 +14,22 @@ import java.util.Arrays;
  * Created by xuejike on 2017/7/25.
  */
 public class TokenFilter implements Filter {
-    protected String token=null;
+
     protected char TAG='#';
+    protected TokenClient tokenClient;
+    protected TokenServer tokenServer;
     URLCodec urlCodec = new URLCodec();
-    protected ThreadLocal<String> clientToken=new ThreadLocal<>();
+    protected ThreadLocal<String> clientUserName =new ThreadLocal<>();
 
     @Override
     public int getOrder() {
         return -1;
     }
 
-    public String getClientToken(){
-        return clientToken.get();
+    public String getClientUserName(){
+        return clientUserName.get();
     }
 
-    public String getToken() {
-        return token;
-    }
-
-    public void setToken(String token) {
-        this.token = token;
-    }
 
     @Override
     public HproseFilter getClient(){
@@ -80,7 +74,14 @@ public class TokenFilter implements Filter {
             String token = StrUtil.toString(tokenArray);
             try {
                 String decode = urlCodec.decode(token, "UTF-8");
-                clientToken.set(decode);
+                String checkUser = tokenServer.checkToken(decode);
+                if (checkUser !=null){
+//                    String userName = tokenServer.getUserName(decode);
+                    clientUserName.set(checkUser);
+                }else{
+                    throw new TokenCheckErrorExeption();
+                }
+
             } catch (Exception e) {
                 throw new RuntimeException("Token 解析异常");
             }
@@ -107,19 +108,37 @@ public class TokenFilter implements Filter {
 
         @Override
         public ByteBuffer outputFilter(ByteBuffer data, HproseContext context) {
-            return encode(data,token);
+            if (tokenClient==null){
+                return data;
+            }
+            return encode(data, tokenClient.buildToken());
         }
     }
     public class Server implements HproseFilter{
 
         @Override
         public ByteBuffer inputFilter(ByteBuffer data, HproseContext context) {
+            if (tokenServer==null){
+                return data;
+            }
             return decode(data);
         }
 
         @Override
         public ByteBuffer outputFilter(ByteBuffer data, HproseContext context) {
             return data;
+        }
+    }
+    public interface TokenClient{
+        String buildToken();
+    }
+    public interface TokenServer{
+        String checkToken(String token);
+//        String getUserName(String token);
+    }
+    public class TokenCheckErrorExeption extends RuntimeException{
+        public TokenCheckErrorExeption() {
+            super("Token校验失败");
         }
     }
 }
