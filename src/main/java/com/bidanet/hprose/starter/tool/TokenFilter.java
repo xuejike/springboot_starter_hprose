@@ -41,58 +41,72 @@ public class TokenFilter implements Filter {
     }
     public ByteBuffer encode(ByteBuffer data,String token)  {
 //        String content = StrUtil.toString(data);
-        if (token==null){
-            return data;
-        }else{
+        try{
+            if (token==null){
+                return data;
+            }else{
 
-            ByteBufferStream stream = new ByteBufferStream();
-            stream.write(TAG);
-            try {
-                stream.write(urlCodec.encode(token,"UTF-8").getBytes());
-            } catch (UnsupportedEncodingException e) {
-                throw new RuntimeException("Token 编码异常");
+                ByteBufferStream stream = new ByteBufferStream();
+                stream.write(TAG);
+                try {
+                    stream.write(urlCodec.encode(token,"UTF-8").getBytes());
+                } catch (UnsupportedEncodingException e) {
+                    throw new RuntimeException("Token 编码异常");
+                }
+                stream.write(TAG);
+                stream.write(data);
+
+                return stream.buffer;
             }
-            stream.write(TAG);
-            stream.write(data);
-
-            return stream.buffer;
+        }catch (Exception ex){
+            ex.printStackTrace();
+            return data;
         }
+
+
 
     }
     public ByteBuffer decode(ByteBuffer data)  {
 //        String content = StrUtil.toString(data);
-        byte b = data.get(0);
-        if (b==TAG){
-            byte[] array = data.array();
-            int end=0;
-            for (int i = 1; i < array.length; i++) {
-                if (array[i]==TAG){
-                    end=i;
+        try{
+            byte b = data.get(0);
+            if (b==TAG){
+                byte[] array = data.array();
+                int end=0;
+                for (int i = 1; i < array.length; i++) {
+                    if (array[i]==TAG){
+                        end=i;
+                    }
                 }
-            }
-            byte[] tokenArray = Arrays.copyOfRange(array, 1, end);
-            String token = StrUtil.toString(tokenArray);
-            try {
-                String decode = urlCodec.decode(token, "UTF-8");
-                String checkUser = tokenServer.checkToken(decode);
-                if (checkUser !=null){
+                byte[] tokenArray = Arrays.copyOfRange(array, 1, end);
+                String token = StrUtil.toString(tokenArray);
+                try {
+                    String decode = urlCodec.decode(token, "UTF-8");
+                    String checkUser = tokenServer.checkToken(decode);
+                    if (checkUser !=null){
 //                    String userName = tokenServer.getUserName(decode);
-                    clientUserName.set(checkUser);
-                }else{
-                    throw new TokenCheckErrorExeption();
+                        clientUserName.set(checkUser);
+                    }else{
+                        throw new TokenCheckErrorExeption();
+                    }
+
+                } catch (Exception e) {
+                    throw new RuntimeException("Token 解析异常");
                 }
 
-            } catch (Exception e) {
-                throw new RuntimeException("Token 解析异常");
+
+                ByteBufferStream stream = new ByteBufferStream();
+                stream.write(Arrays.copyOfRange(array,end+1,array.length));
+                return stream.buffer;
+            }else{
+                return data;
             }
-
-
-            ByteBufferStream stream = new ByteBufferStream();
-            stream.write(Arrays.copyOfRange(array,end+1,array.length));
-            return stream.buffer;
-        }else{
+        }catch (Exception ex){
+            ex.printStackTrace();
             return data;
+
         }
+
 
     }
 
