@@ -72,11 +72,14 @@ public class TokenFilter implements Filter {
 
     }
     public ByteBuffer decode(ByteBuffer data)  {
-//        String content = StrUtil.toString(data);
+
         try {
-            byte b = data.get(0);
+            String content = StrUtil.toString(data);
+            byte[] array = content.getBytes();
+
+            byte b = array[0];
             if (b==TAG){
-                byte[] array = data.array();
+
                 int end=0;
                 for (int i = 1; i < array.length; i++) {
                     if (array[i]==TAG){
