@@ -84,6 +84,7 @@ public class TokenFilter implements Filter {
                 for (int i = 1; i < array.length; i++) {
                     if (array[i]==TAG){
                         end=i;
+                        break;
                     }
                 }
                 byte[] tokenArray = Arrays.copyOfRange(array, 1, end);
